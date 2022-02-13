@@ -1,6 +1,7 @@
 import os
 import re
 import socket
+import sys
 import time
 from collections import Counter
 
@@ -87,10 +88,14 @@ if __name__ == '__main__':
     PORT = 6667
     NICK = os.environ['NICK']
     PASS = os.environ['PASS']
-    CHAN = os.environ['CHAN']
+    CHAN = '#' + os.environ['CHAN']
     s = socket.socket()
     s.connect((HOST, PORT))
     s.send("PASS {}\r\n".format(PASS).encode("utf-8"))
     s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
     s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        s.close()
+        sys.exit(0)
