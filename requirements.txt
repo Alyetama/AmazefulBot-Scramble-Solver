@@ -1,0 +1,2 @@
+python-dotenv>=0.19.1
+loguru>=0.5.3
