@@ -68,7 +68,7 @@ def main():
             logger.info(test_anagrams)
 
             for n, w in enumerate(test_anagrams):
-                time.sleep(1)
+                time.sleep(2)
                 chat(s, w)
                 logger.info(f'attempt {n + 1}/{len(test_anagrams)}: {w}')
                 try:
