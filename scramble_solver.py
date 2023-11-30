@@ -1,6 +1,8 @@
 import os
+import random
 import re
 import socket
+import string
 import sys
 import time
 from collections import Counter
@@ -8,6 +10,9 @@ from collections import Counter
 from dotenv import load_dotenv
 from loguru import logger
 
+
+BOT_NAME = os.environ['BOT_NAME'].lower()
+EMOTE_NAME = os.environ['EMOTE_NAME']
 
 def words():
     with open('/usr/share/dict/words') as f:
@@ -39,6 +44,12 @@ def chat(sock, msg):
     sock.send("PRIVMSG {} :{}\r\n".format(CHAN, msg).encode("utf-8"))
 
 
+def send_command(s):
+    rand_str = random.choice(string.ascii_letters)
+    chat(s, f'#scramble {rand_str}')
+    logger.debug('Sent a #scramble command.')
+
+
 def get_response():
     CHAT_MSG = re.compile(r"^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :")
     response = s.recv(1024).decode("utf-8")
@@ -50,7 +61,7 @@ def get_response():
         return username, message
 
 
-def main():
+def main(send=False):
     while True:
         try:
             username, message = get_response()
@@ -59,26 +70,34 @@ def main():
         except (ConnectionResetError, TypeError):
             continue
 
-        if username == 'amazefulbot' and message.startswith(
-                '[Scramble]') and 'FeelsGoodMan' not in message and 'Hint' not in message:
+        if username == BOT_NAME and message.startswith(
+                '[Scramble]'
+        ) and EMOTE_NAME not in message and 'Hint' not in message:
             logger.info(message)
-            word = message.split(': ')[1].split(' ')[0]
+            try:
+                word = message.split(': ')[1].split(' ')[0]
+            except IndexError as e:
+                logger.error(e)
+                continue
             logger.info(f'Word: {word}')
             test_anagrams = return_anagrams(word)
+            if not test_anagrams:
+                logger.info('Testing without "s"...')
+                test_anagrams = return_anagrams(word.strip('s'))
+                test_anagrams = [x + 's' for x in test_anagrams]
             logger.info(test_anagrams)
 
             for n, w in enumerate(test_anagrams):
-                time.sleep(2)
+                time.sleep(2)  # You can change it to 1 for faster response.
                 chat(s, w)
                 logger.info(f'attempt {n + 1}/{len(test_anagrams)}: {w}')
                 try:
                     username, message = get_response()
                 except ConnectionResetError:
                     continue
-                if username == 'amazefulbot' and message.startswith(
-                        '[Scramble]') and 'FeelsGoodMan' in message:
+                if username == BOT_NAME and message.startswith(
+                        '[Scramble]') and EMOTE_NAME in message:
                     break
-
 
 if __name__ == '__main__':
     logger.add('logs.log')
@@ -95,7 +114,7 @@ if __name__ == '__main__':
     s.send("NICK {}\r\n".format(NICK).encode("utf-8"))
     s.send("JOIN {}\r\n".format(CHAN).encode("utf-8"))
     try:
-        main()
-    except KeyboardInterrupt:
+        main(send=True)
+    except (KeyboardInterrupt, TypeError):
         s.close()
         sys.exit(0)
