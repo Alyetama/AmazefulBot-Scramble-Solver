@@ -11,10 +11,6 @@ from dotenv import load_dotenv
 from loguru import logger
 
 
-load_dotenv()
-BOT_NAME = os.environ['BOT_NAME'].lower()
-EMOTE_NAME = os.environ['EMOTE_NAME']
-
 def words():
     with open('/usr/share/dict/words') as f:
         dictionary = f.read()
@@ -100,8 +96,12 @@ def main(send=False):
                         '[Scramble]') and EMOTE_NAME in message:
                     break
 
+
 if __name__ == '__main__':
     logger.add('logs.log')
+    load_dotenv()
+    BOT_NAME = os.environ['BOT_NAME'].lower()
+    EMOTE_NAME = os.environ['EMOTE_NAME']
     dictionary = words()
     HOST = "irc.chat.twitch.tv"
     PORT = 6667
