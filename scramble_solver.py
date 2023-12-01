@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from loguru import logger
 
 
+load_dotenv()
 BOT_NAME = os.environ['BOT_NAME'].lower()
 EMOTE_NAME = os.environ['EMOTE_NAME']
 
@@ -101,7 +102,6 @@ def main(send=False):
 
 if __name__ == '__main__':
     logger.add('logs.log')
-    load_dotenv()
     dictionary = words()
     HOST = "irc.chat.twitch.tv"
     PORT = 6667
